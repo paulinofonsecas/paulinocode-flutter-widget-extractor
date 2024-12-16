@@ -25,7 +25,7 @@ This VS Code extension helps you quickly extract Flutter widgets into separate D
 
 **Contributing:**
 
-Contributions are welcome! Please submit pull requests to the [GitHub repository](https://github.com/ionicfirebaseapp/getwidget).
+Contributions are welcome! Please submit pull requests to the [GitHub repository](https://github.com/paulinofonsecas/paulinocode-flutter-widget-extractor).
 
 **License:**
 

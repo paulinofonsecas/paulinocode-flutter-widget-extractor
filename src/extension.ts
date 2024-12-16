@@ -30,13 +30,16 @@ async function getWidgetContent(editor: vscode.TextEditor, lineNumber: number): 
     try {
         while (braceCount > 0 && auxLine < document.lineCount) {
             const nextLine = document.lineAt(++auxLine).text;
-            const openBraceIndex = nextLine.indexOf('{');
-            const closeBraceIndex = nextLine.indexOf('}');
-            if (openBraceIndex >= 0) {
+            let openBraceIndex = nextLine.indexOf('{');
+            let closeBraceIndex = nextLine.indexOf('}');
+            while (openBraceIndex >= 0) {
                 braceCount++;
+                openBraceIndex = nextLine.indexOf('{', openBraceIndex + 1);
             }
-            if (closeBraceIndex >= 0 && (openBraceIndex === -1 || closeBraceIndex < openBraceIndex)) {
+
+            while (closeBraceIndex >= 0) {
                 braceCount--;
+                closeBraceIndex = nextLine.indexOf('}', closeBraceIndex + 1);
             }
         }
 
