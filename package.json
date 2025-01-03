@@ -2,7 +2,7 @@
   "name": "paulinocode-flutter-widget-extractor",
   "displayName": "Flutter widget to file extractor",
   "description": "This VS Code extension simplifies the process of creating reusable Flutter components. Easily extract selected widget code to individual Dart files, promoting clean code and maintainable projects.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "paulinofonseca",
   "engines": {
     "vscode": "^1.90.1"
