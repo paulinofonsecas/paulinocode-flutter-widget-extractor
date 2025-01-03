@@ -27,7 +27,11 @@ async function getWidgetContent(editor: vscode.TextEditor, lineNumber: number): 
     let braceCount = 1;
     let auxLine = lineNumber;
     const document = editor.document;
+    const lineText = document.lineAt(lineNumber).text;
+    const isStateful = lineText.includes('extends StatefulWidget');
+
     try {
+        let widgetEndLine = -1;
         while (braceCount > 0 && auxLine < document.lineCount) {
             const nextLine = document.lineAt(++auxLine).text;
             let openBraceIndex = nextLine.indexOf('{');
@@ -36,26 +40,79 @@ async function getWidgetContent(editor: vscode.TextEditor, lineNumber: number): 
                 braceCount++;
                 openBraceIndex = nextLine.indexOf('{', openBraceIndex + 1);
             }
-
             while (closeBraceIndex >= 0) {
                 braceCount--;
                 closeBraceIndex = nextLine.indexOf('}', closeBraceIndex + 1);
             }
         }
+        widgetEndLine = auxLine;
 
         if (braceCount !== 0) {
-            vscode.window.showErrorMessage("Braces do not match.");
+            vscode.window.showErrorMessage("Braces do not match in the widget definition.");
             return null;
         }
 
-        const range = new vscode.Range(lineNumber, 0, auxLine, document.lineAt(auxLine).range.end.character);
-        const widgetContent = document.getText(range);
+        let stateClassContent = '';
+        let stateClassStartLine = -1;
+        let stateClassEndLine = -1;
+
+        if (isStateful) {
+            const stateClassNameMatch = lineText.match(/class\s+(\w+)\s+extends\s+StatefulWidget/);
+            if (stateClassNameMatch && stateClassNameMatch[1]) {
+                const widgetName = stateClassNameMatch[1];
+                const expectedStateClassName = `_${widgetName}State`;
+
+                // Procurar pela classe State associada
+                for (let i = widgetEndLine + 1; i < document.lineCount; i++) {
+                    const currentLineText = document.lineAt(i).text;
+                    const stateClassMatch = currentLineText.match(new RegExp(`class\\s+(${expectedStateClassName})\\s+extends\\s+State<${widgetName}>`));
+                    if (stateClassMatch) {
+                        stateClassStartLine = i;
+                        break;
+                    }
+                }
+
+                if (stateClassStartLine !== -1) {
+                    braceCount = 1;
+                    auxLine = stateClassStartLine;
+                    while (braceCount > 0 && auxLine < document.lineCount) {
+                        const nextLine = document.lineAt(++auxLine).text;
+                        let openBraceIndex = nextLine.indexOf('{');
+                        let closeBraceIndex = nextLine.indexOf('}');
+                        while (openBraceIndex >= 0) {
+                            braceCount++;
+                            openBraceIndex = nextLine.indexOf('{', openBraceIndex + 1);
+                        }
+                        while (closeBraceIndex >= 0) {
+                            braceCount--;
+                            closeBraceIndex = nextLine.indexOf('}', closeBraceIndex + 1);
+                        }
+                    }
+                    stateClassEndLine = auxLine;
+
+                    if (braceCount !== 0) {
+                        vscode.window.showErrorMessage("Braces do not match in the State class definition.");
+                        return null;
+                    }
+
+                    const stateRange = new vscode.Range(stateClassStartLine, 0, stateClassEndLine, document.lineAt(stateClassEndLine).range.end.character);
+                    stateClassContent = document.getText(stateRange);
+                } else {
+                    vscode.window.showErrorMessage(`Could not find the State class for ${widgetName}.`);
+                    return null;
+                }
+            }
+        }
+
+        const widgetRange = new vscode.Range(lineNumber, 0, widgetEndLine, document.lineAt(widgetEndLine).range.end.character);
+        const widgetContent = document.getText(widgetRange);
+        const fullWidgetContent = isStateful && stateClassContent ? `${widgetContent}\n\n${stateClassContent}` : widgetContent;
 
         await editor.edit(editBuilder => {
-            editBuilder.delete(range);
+            editBuilder.delete(isStateful && stateClassEndLine !== -1 ? new vscode.Range(lineNumber, 0, stateClassEndLine, document.lineAt(stateClassEndLine).range.end.character) : widgetRange);
         });
 
-        return widgetContent;
+        return fullWidgetContent;
     } catch (error) {
         vscode.window.showErrorMessage(`Error extracting widget content: ${error}`);
         return null;
