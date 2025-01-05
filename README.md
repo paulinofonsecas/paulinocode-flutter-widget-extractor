@@ -2,6 +2,12 @@
 
 This VS Code extension helps you quickly extract Flutter widgets into separate Dart files, improving code organization and reusability.
 
+<p align="center">
+  <a href="https://github.com/paulinofonsecas/paulinocode-flutter-widget-extractor/blob/master/media/demo.mp4?raw=true">
+    <img src="https://github.com/paulinofonsecas/paulinocode-flutter-widget-extractor/raw/master/media/demo.mp4?raw=true" alt="Flutter Widget Extractor" />
+  </a>
+</p>
+
 **Features:**
 
 * **Extracts widgets:** Selects the widget code within the editor and extracts it into a new Dart file.
