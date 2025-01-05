@@ -2,11 +2,6 @@
 
 This VS Code extension helps you quickly extract Flutter widgets into separate Dart files, improving code organization and reusability.
 
-<video width="640" height="480" controls>
-  <source src="media/demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
 **Features:**
 
 * **Extracts widgets:** Selects the widget code within the editor and extracts it into a new Dart file.
